@@ -14,6 +14,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "Docker Volume Admin"
 	app.Usage = "The missing volume administrator for Docker"
+	app.Action = volumeList
 	//app.Action = run
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -28,12 +29,12 @@ func main() {
 		{
 			Name:   "list",
 			Usage:  "List all volumes",
-			Action: listVolumes,
+			Action: volumeList,
 		},
 		{
 			Name:   "inspect",
 			Usage:  "Get details of volume",
-			Action: inspectVolume,
+			Action: volumeInspect,
 		},
 		{
 			Name:   "rm",
@@ -85,7 +86,11 @@ func setup(client docker.Docker) *volStore {
 		}
 
 		for path, vol := range vols {
-			v := &Volume{Volume: vol}
+			v := &Volume{Volume: *vol}
+
+			if v.IsBindMount {
+				continue
+			}
 
 			name := strings.TrimPrefix(c.Name, "/")
 			name = name + ":" + path

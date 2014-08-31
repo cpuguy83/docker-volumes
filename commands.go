@@ -13,7 +13,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func listVolumes(ctx *cli.Context) {
+func volumeList(ctx *cli.Context) {
 	docker := getDockerClient(ctx)
 
 	volumes := setup(docker)
@@ -24,6 +24,7 @@ func listVolumes(ctx *cli.Context) {
 		if len(id) > 12 {
 			id = id[:12]
 		}
+
 		out := []string{id, strings.Join(vol.Names, ", "), vol.HostPath}
 		items = append(items, out)
 	}
@@ -35,7 +36,7 @@ func listVolumes(ctx *cli.Context) {
 	table.Render()
 }
 
-func inspectVolume(ctx *cli.Context) {
+func volumeInspect(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
 		log.Fatal("Malformed argument. Please supply 1 and only 1 argument")
 	}
