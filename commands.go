@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/codegangsta/cli"
@@ -66,10 +67,12 @@ func volumeRm(ctx *cli.Context) {
 		log.Fatal("Volume is in use, cannot remove: ", ctx.Args()[0])
 	}
 
-	bindSpec := v.HostPath + ":" + "/dockervolumeremove"
+	hostMountPath := strings.TrimSuffix(v.HostPath, filepath.Base(v.HostPath))
+
+	bindSpec := hostMountPath + ":" + "/dockervolumeremove"
 	containerConfig := map[string]interface{}{
 		"Image": "busybox",
-		"Cmd":   "rm -rf /dockervolumeremove",
+		"Cmd":   "rm -rf /dockervolumeremove/" + filepath.Base(v.HostPath),
 		"Volumes": map[string]struct{}{
 			"/dockervolumeremove": struct{}{},
 		},
@@ -101,10 +104,30 @@ func volumeExport(ctx *cli.Context) {
 		log.Fatal("Could not find volume: ", name)
 	}
 
+	if ctx.Bool("pause") {
+		for _, c := range v.Containers {
+			err := docker.ContainerPause(c)
+			if err != nil {
+				docker.ContainerUnpause(c)
+				log.Fatal(err)
+			}
+			defer docker.ContainerUnpause(c)
+		}
+	}
+
 	archive, err := archive.Tar(v.HostPath, archive.Uncompressed)
+	if ctx.Bool("pause") {
+		for _, c := range v.Containers {
+			if err := docker.ContainerUnpause(c); err != nil {
+				log.Println(err)
+			}
+		}
+	}
 	if err != nil {
+
 		log.Fatal(err)
 	}
+
 	defer archive.Close()
 
 	io.Copy(os.Stdout, archive)
