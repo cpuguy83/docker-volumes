@@ -3,7 +3,7 @@ package main
 import "github.com/cpuguy83/dockerclient"
 
 type Volume struct {
-	*docker.Volume
+	docker.Volume
 	Containers []string
 	Names      []string
 }
