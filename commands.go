@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
-	"github.com/docker/docker/archive"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -109,26 +108,34 @@ func volumeExport(ctx *cli.Context) {
 			err := docker.ContainerPause(c)
 			if err != nil {
 				docker.ContainerUnpause(c)
-				log.Fatal(err)
+				continue
 			}
 			defer docker.ContainerUnpause(c)
 		}
 	}
 
-	archive, err := archive.Tar(v.HostPath, archive.Uncompressed)
-	if ctx.Bool("pause") {
-		for _, c := range v.Containers {
-			if err := docker.ContainerUnpause(c); err != nil {
-				log.Println(err)
-			}
-		}
+	bindSpec := v.HostPath + ":/.dockervolume"
+	containerConfig := map[string]interface{}{
+		"Image":   "busybox",
+		"WorkDir": "/.dockervolume",
+		"Cmd":     []string{"/bin/sh", "-c", "cd /.dockervolume; /bin/tar -cvvf /.dockervolume.tar *"},
+		"Volumes": map[string]struct{}{
+			"/.dockervolume": struct{}{},
+		},
+		"HostConfig": map[string]interface{}{
+			"Binds": []string{bindSpec},
+		},
 	}
+
+	containerId, err := docker.RunContainer(containerConfig)
 	if err != nil {
-
-		log.Fatal(err)
+		//docker.RemoveContainer(containerId, true, true)
+		log.Fatal(containerId, err)
 	}
 
-	defer archive.Close()
+	fileChan := docker.Copy(containerId, "/.dockervolume.tar")
 
-	io.Copy(os.Stdout, archive)
+	for l := range fileChan {
+		io.Copy(os.Stdout, strings.NewReader(l))
+	}
 }
