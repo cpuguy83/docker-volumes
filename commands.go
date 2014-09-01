@@ -116,9 +116,8 @@ func volumeExport(ctx *cli.Context) {
 
 	bindSpec := v.HostPath + ":/.dockervolume"
 	containerConfig := map[string]interface{}{
-		"Image":   "busybox",
-		"WorkDir": "/.dockervolume",
-		"Cmd":     []string{"/bin/sh", "-c", "cd /.dockervolume; /bin/tar -cvvf /.dockervolume.tar *"},
+		"Image": "busybox",
+		"Cmd":   []string{"/bin/sh", "-c", fmt.Sprintf("cp -r /.dockervolume /%v", v.Id())},
 		"Volumes": map[string]struct{}{
 			"/.dockervolume": struct{}{},
 		},
@@ -129,13 +128,17 @@ func volumeExport(ctx *cli.Context) {
 
 	containerId, err := docker.RunContainer(containerConfig)
 	if err != nil {
-		//docker.RemoveContainer(containerId, true, true)
+		docker.RemoveContainer(containerId, true, true)
 		log.Fatal(containerId, err)
 	}
 
-	fileChan := docker.Copy(containerId, "/.dockervolume.tar")
-
-	for l := range fileChan {
-		io.Copy(os.Stdout, strings.NewReader(l))
+	file, err := docker.Copy(containerId, fmt.Sprintf("/%v", v.Id()))
+	if err != nil {
+		docker.RemoveContainer(containerId, true, true)
+		log.Fatal(err)
 	}
+
+	defer docker.RemoveContainer(containerId, true, true)
+
+	io.Copy(os.Stdout, file)
 }
