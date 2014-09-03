@@ -26,6 +26,11 @@ func main() {
 			Usage:  "Location of the Docker socket",
 			EnvVar: "DOCKER_HOST",
 		},
+		cli.StringFlag{
+			Name:  "mode, m",
+			Value: "container",
+			Usage: "Set the mode to use, contaienr or host.",
+		},
 	}
 
 	app.Commands = []cli.Command{
@@ -33,6 +38,12 @@ func main() {
 			Name:   "list",
 			Usage:  "List all volumes",
 			Action: volumeList,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "quiet, q",
+					Usage: "Display only IDs",
+				},
+			},
 		},
 		{
 			Name:   "inspect",

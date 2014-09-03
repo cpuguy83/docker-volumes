@@ -18,13 +18,21 @@ func volumeList(ctx *cli.Context) {
 
 	volumes := setup(docker)
 
+	if ctx.Bool("quiet") {
+		var out []string
+		for _, vol := range volumes.s {
+			id := vol.Id()
+			out = append(out, id)
+		}
+		fmt.Println(strings.Join(out, "\n"))
+		return
+	}
 	var items [][]string
 	for _, vol := range volumes.s {
 		id := vol.Id()
 		if len(id) > 12 {
 			id = id[:12]
 		}
-
 		out := []string{id, strings.Join(vol.Names, ", "), vol.HostPath}
 		items = append(items, out)
 	}
