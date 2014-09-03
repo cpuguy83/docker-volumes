@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"log"
 	"os"
+	"path/filepath"
 
 	"strings"
 
@@ -107,5 +110,92 @@ func setup(client docker.Docker) *volStore {
 
 		}
 	}
+
+	info, err := client.Info()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	path := info.RootPath()
+	path = strings.TrimSuffix(path, "/"+filepath.Base(path))
+	path = path + "/vfs/dir"
+
+	volDirs, err := volumesFromDisk(path, client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, d := range volDirs {
+		hostPath := path + "/" + d
+
+		if hostPath == path+"/" {
+			continue
+		}
+
+		v := &Volume{Volume: docker.Volume{HostPath: hostPath, IsBindMount: false, IsReadWrite: true}}
+		vol := volumes.Find(d)
+		if vol != nil {
+			continue
+		}
+
+		volumes.Add(v)
+	}
+
 	return volumes
+}
+
+func volumesFromDisk(path string, client docker.Docker) ([]string, error) {
+	bindSpec := path + ":" + "/.docker_root"
+	containerConfig := map[string]interface{}{
+		"Image": "busybox",
+		"Cmd":   []string{"/bin/sh", "-c", "ls /.docker_root/"},
+		"Volumes": map[string]struct{}{
+			"/.docker_root": struct{}{},
+		},
+		"HostConfig": map[string]interface{}{
+			"Binds": []string{bindSpec},
+		},
+	}
+
+	id, err := client.RunContainer(containerConfig)
+	defer client.RemoveContainer(id, true, true)
+	if err != nil {
+		return nil, err
+	}
+
+	dirs, err := client.ContainerLogs(id, false, true, true, false, -1)
+	if err != nil {
+		return nil, err
+	}
+
+	var out []string
+	var b []byte
+
+	scanner := bufio.NewScanner(dirs)
+	for scanner.Scan() {
+		b = append(b, scanner.Bytes()...)
+	}
+
+	scanner = bufio.NewScanner(bufio.NewReader(bytes.NewReader(b)))
+	scanner.Split(scanHeader)
+	for scanner.Scan() {
+		out = append(out, strings.Split(scanner.Text(), "\u0001")[0])
+	}
+	return out, nil
+}
+
+func scanHeader(data []byte, atEOF bool) (int, []byte, error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+
+	if i := bytes.IndexByte(data, 'A'); i >= 0 {
+		return i + 1, data[0:i], nil
+	}
+
+	if atEOF {
+		return len(data), data, nil
+	}
+
+	return 0, nil, nil
 }
