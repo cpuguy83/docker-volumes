@@ -12,6 +12,8 @@ DOCKER_HOST or you can specify a host using the same syntax as with Docker, with
 `-H unix:///path/to/sock.sock` or `--host unix:///path/to/sock.sock`.
 *This also works with TCP endpoints*
 
+Use this to see all your volumes, inspect them, export them, or clean them up.
+
 ## Installation
 
 You can use the provided Dockerfile which will compile a binary for you or build
