@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -18,10 +18,9 @@ func main() {
 	app.Name = "Docker Volume Admin"
 	app.Usage = "The missing volume administrator for Docker"
 	app.Action = volumeList
-	//app.Action = run
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:   "sock, s",
+			Name:   "host, H",
 			Value:  "/var/run/docker.sock",
 			Usage:  "Location of the Docker socket",
 			EnvVar: "DOCKER_HOST",
@@ -74,37 +73,34 @@ func main() {
 func getDockerClient(ctx *cli.Context) docker.Docker {
 	docker, err := docker.NewClient(ctx.GlobalString("sock"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	return docker
 }
 
 func setup(client docker.Docker) *volStore {
 	var volumes = &volStore{
-		s:      make(map[string]*Volume),
-		refMap: make(map[string]map[*docker.Container]struct{}),
+		s: make(map[string]*Volume),
 	}
 	containers, err := client.FetchAllContainers()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	for _, c := range containers {
 		c, err = client.FetchContainer(c.Id)
 		if err != nil {
-			log.Println(err)
+			fmt.Println(err)
 		}
 		vols, err := c.GetVolumes()
 		if err != nil {
-			log.Println("Error pulling volumes for:", c.Id)
+			fmt.Println("Error pulling volumes for:", c.Id)
 		}
 
 		for path, vol := range vols {
 			v := &Volume{Volume: *vol}
-
-			if v.IsBindMount {
-				continue
-			}
 
 			name := strings.TrimPrefix(c.Name, "/")
 			name = name + ":" + path
@@ -117,14 +113,13 @@ func setup(client docker.Docker) *volStore {
 			v.Containers = append(v.Containers, c.Id)
 
 			volumes.Add(v)
-			volumes.AddRef(v, c)
-
 		}
 	}
 
 	info, err := client.Info()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	path := info.RootPath()
@@ -133,7 +128,8 @@ func setup(client docker.Docker) *volStore {
 
 	volDirs, err := volumesFromDisk(path, client)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	for _, d := range volDirs {

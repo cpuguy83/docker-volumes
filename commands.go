@@ -29,7 +29,7 @@ func volumeList(ctx *cli.Context) {
 	}
 	var items [][]string
 	for _, vol := range volumes.s {
-		id := vol.Id()
+		id := vol.ID
 		if len(id) > 12 {
 			id = id[:12]
 		}

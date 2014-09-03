@@ -1,29 +1,31 @@
 package main
 
-import "github.com/cpuguy83/dockerclient"
+import (
+	"crypto/sha1"
+	"fmt"
+
+	"github.com/cpuguy83/dockerclient"
+)
 
 type Volume struct {
 	docker.Volume
+	ID         string
 	Containers []string
 	Names      []string
 }
 
 type volStore struct {
-	s      map[string]*Volume
-	refMap map[string]map[*docker.Container]struct{}
+	s map[string]*Volume
 }
 
 func (v *volStore) Add(volume *Volume) {
-	v.s[volume.Id()] = volume
-}
-
-func (v *volStore) AddRef(volume *Volume, container *docker.Container) {
-	id := volume.Id()
-	if _, exists := v.refMap[id]; !exists {
-		v.refMap[id] = make(map[*docker.Container]struct{})
+	volume.ID = volume.Id()
+	if volume.IsBindMount {
+		h := sha1.New()
+		h.Write([]byte(volume.HostPath))
+		volume.ID = fmt.Sprintf("%x", h.Sum(nil))
 	}
-
-	v.refMap[id][container] = struct{}{}
+	v.s[volume.ID] = volume
 }
 
 func (v *volStore) Get(id string) *Volume {
@@ -31,11 +33,9 @@ func (v *volStore) Get(id string) *Volume {
 }
 
 func (v *volStore) CanRemove(volume *Volume) bool {
-	var id = volume.Id()
-	if len(v.refMap[id]) != 0 {
+	if len(volume.Containers) != 0 {
 		return false
 	}
-
 	return true
 }
 
@@ -70,7 +70,7 @@ func (v *volStore) FindByName(name string) *Volume {
 
 func (v *volStore) FindByTruncatedID(id string) *Volume {
 	for _, vol := range v.s {
-		volId := vol.Id()
+		volId := vol.ID
 		if len(volId) > 12 {
 			volId = volId[:12]
 		}
