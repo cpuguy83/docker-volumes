@@ -15,9 +15,10 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "Docker Volume Admin"
-	app.Usage = "The missing volume administrator for Docker"
+	app.Name = "Docker Volume Manager"
+	app.Usage = "The missing volume manager for Docker"
 	app.Action = volumeList
+	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "host, H",
