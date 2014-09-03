@@ -81,7 +81,7 @@ func setup(client docker.Docker) *volStore {
 	var volumes = &volStore{
 		s: make(map[string]*Volume),
 	}
-	containers, err := client.FetchAllContainers()
+	containers, err := client.FetchAllContainers(true)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
