@@ -66,9 +66,9 @@ func volumeRm(ctx *cli.Context) {
 		log.Fatal("Malformed argument. Please supply 1 and only 1 argument")
 	}
 
+	docker := getDockerClient(ctx)
+	volumes := setup(docker)
 	for _, name := range ctx.Args() {
-		docker := getDockerClient(ctx)
-		volumes := setup(docker)
 
 		v := volumes.Find(name)
 		if v == nil {
