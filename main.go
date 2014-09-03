@@ -71,7 +71,7 @@ func main() {
 }
 
 func getDockerClient(ctx *cli.Context) docker.Docker {
-	docker, err := docker.NewClient(ctx.GlobalString("sock"))
+	docker, err := docker.NewClient(ctx.GlobalString("host"))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
