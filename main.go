@@ -28,11 +28,6 @@ func main() {
 			Usage:  "Location of the Docker socket",
 			EnvVar: "DOCKER_HOST",
 		},
-		cli.StringFlag{
-			Name:  "mode, m",
-			Value: "container",
-			Usage: "Set the mode to use, contaienr or host.",
-		},
 	}
 
 	app.Commands = []cli.Command{
