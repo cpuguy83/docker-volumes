@@ -54,40 +54,51 @@ func volumeInspect(ctx *cli.Context) {
 }
 
 func volumeRm(ctx *cli.Context) {
-	if len(ctx.Args()) != 1 {
+	if len(ctx.Args()) == 0 {
 		log.Fatal("Malformed argument. Please supply 1 and only 1 argument")
 	}
 
-	docker := getDockerClient(ctx)
-	volumes := setup(docker)
+	for _, name := range ctx.Args() {
+		docker := getDockerClient(ctx)
+		volumes := setup(docker)
 
-	v := volumes.Find(ctx.Args()[0])
-	if !volumes.CanRemove(v) {
-		log.Fatal("Volume is in use, cannot remove: ", ctx.Args()[0])
-	}
+		v := volumes.Find(name)
+		if v == nil {
+			log.Println("Could not find volume: ", name)
+			continue
+		}
+		if !volumes.CanRemove(v) {
+			log.Println("Volume is in use, cannot remove: ", name)
+			continue
+		}
 
-	hostMountPath := strings.TrimSuffix(v.HostPath, filepath.Base(v.HostPath))
+		hostMountPath := strings.TrimSuffix(v.HostPath, filepath.Base(v.HostPath))
+		hostConfPath := strings.TrimSuffix(hostMountPath, "/vfs/dir/") + "/volumes"
 
-	bindSpec := hostMountPath + ":" + "/dockervolumeremove"
-	containerConfig := map[string]interface{}{
-		"Image": "busybox",
-		"Cmd":   "rm -rf /dockervolumeremove/" + filepath.Base(v.HostPath),
-		"Volumes": map[string]struct{}{
-			"/dockervolumeremove": struct{}{},
-		},
-		"HostConfig": map[string]interface{}{
-			"Binds": []string{bindSpec},
-		},
-	}
+		bindSpec := hostMountPath + ":" + "/.dockervolume"
+		bindSpec2 := hostConfPath + ":" + "/.dockervolume2"
+		containerConfig := map[string]interface{}{
+			"Image": "busybox",
+			"Cmd":   []string{"/bin/sh", "-c", ("rm -rf /.dockervolume/" + filepath.Base(v.HostPath) + ("&& rm -rf /.dockervolume2/" + filepath.Base(v.HostPath)))},
+			"Volumes": map[string]struct{}{
+				"/.dockervolume":  struct{}{},
+				"/.dockervolume2": struct{}{},
+			},
+			"HostConfig": map[string]interface{}{
+				"Binds": []string{bindSpec, bindSpec2},
+			},
+		}
 
-	containerId, err := docker.RunContainer(containerConfig)
-	if err != nil {
+		containerId, err := docker.RunContainer(containerConfig)
+		if err != nil {
+			docker.RemoveContainer(containerId, true, true)
+			log.Println("Could not remove volume: ", v.HostPath)
+			continue
+		}
 		docker.RemoveContainer(containerId, true, true)
-		log.Fatal("Could not remove volume: ", v.HostPath)
-	}
-	docker.RemoveContainer(containerId, true, true)
 
-	log.Println("Successfully removed volume: ", ctx.Args()[0])
+		log.Println("Successfully removed volume: ", name)
+	}
 }
 
 func volumeExport(ctx *cli.Context) {
@@ -131,14 +142,13 @@ func volumeExport(ctx *cli.Context) {
 		docker.RemoveContainer(containerId, true, true)
 		log.Fatal(containerId, err)
 	}
+	defer docker.RemoveContainer(containerId, true, true)
 
 	file, err := docker.Copy(containerId, fmt.Sprintf("/%v", v.Id()))
 	if err != nil {
 		docker.RemoveContainer(containerId, true, true)
 		log.Fatal(err)
 	}
-
-	defer docker.RemoveContainer(containerId, true, true)
 
 	io.Copy(os.Stdout, file)
 }
