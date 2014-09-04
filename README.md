@@ -20,7 +20,7 @@ You can use the provided Dockerfile which will compile a binary for you or build
 yourself.
 
 ```bash
-docker build -t docker-volumes git@github.com:cpuguy83/docker-volman.git
+docker build -t docker-volumes git@github.com:cpuguy83/docker-volumes.git
 docker run --name docker-volumes docker-volumes
 docker cp docker-volumes:/opt/docker-volumes/docker-volumes ./
 ```
@@ -29,7 +29,7 @@ By default when compiling from the Dockerfile it will compile for linux/amd64.
 You can customize this using environment variables as such:
 
 ```bash
-docker run -d --name volman -e GOOS=darwin -e GOARCH=amd64 volman
+docker run -d --name docker-volumes -e GOOS=darwin -e GOARCH=amd64 docker-volumes
 ```
 
 This would make a binary for darwin/amd64 (OSX), available for `docker cp` at the
@@ -39,7 +39,7 @@ Alternatively, if you already have golang installed on your system you can
 compile it yourself:
 
 ```bash
-git clone git@github.com:cpuguy83/docker-volman.git
+git clone git@github.com:cpuguy83/docker-volumes.git
 go get
 go build
 ```
