@@ -40,6 +40,7 @@ compile it yourself:
 
 ```bash
 git clone git@github.com:cpuguy83/docker-volumes.git
+cd docker-volumes
 go get
 go build
 ```
