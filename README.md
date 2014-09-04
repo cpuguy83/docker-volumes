@@ -54,7 +54,7 @@ Commands:
 * **rm** - Removes a volume. A volume is only removed if no containers are using it
 * **export** - Creates an archive of the volume and outputs it to stdout.  You can
   optionally pause all running containers (which are using the requested volume)
-  before exporting the volume using `--puase`
+  before exporting the volume using `--pause`
 
 ```
 NAME:
