@@ -32,7 +32,7 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:   "list",
+			Name:   "list, ls",
 			Usage:  "List all volumes",
 			Action: volumeList,
 			Flags: []cli.Flag{
@@ -62,6 +62,11 @@ func main() {
 					Usage: "Pause any container using the volume before export",
 				},
 			},
+		},
+		{
+			Name:   "import",
+			Usage:  "Import a tarball produced by the export command the specified container",
+			Action: volumeImport,
 		},
 	}
 
