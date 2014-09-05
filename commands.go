@@ -65,7 +65,7 @@ func volumeInspect(ctx *cli.Context) {
 
 func volumeRm(ctx *cli.Context) {
 	if len(ctx.Args()) == 0 {
-		fmt.Fprintln(os.Stderr, "Malformed argument. Please supply 1 and only 1 argument")
+		fmt.Fprintln(os.Stderr, "Malformed argument. Must supply at least 1 argument")
 		os.Exit(1)
 	}
 
