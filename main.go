@@ -17,7 +17,6 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "docker-volumes"
 	app.Usage = "The missing volume manager for Docker"
-	app.Action = volumeList
 	app.Version = "1.0.0"
 	app.Author = "Brian Goff"
 	app.Email = "cpuguy83@gmail.com"
@@ -32,7 +31,7 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:   "list, ls",
+			Name:   "list",
 			Usage:  "List all volumes",
 			Action: volumeList,
 			Flags: []cli.Flag{
