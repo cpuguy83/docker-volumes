@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,7 +24,7 @@ func volumeList(ctx *cli.Context) {
 			id := vol.Id()
 			out = append(out, id)
 		}
-		fmt.Println(strings.Join(out, "\n"))
+		fmt.Fprintln(os.Stderr, strings.Join(out, "\n"))
 		return
 	}
 	var items [][]string
@@ -46,7 +46,8 @@ func volumeList(ctx *cli.Context) {
 
 func volumeInspect(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
-		log.Fatal("Malformed argument. Please supply 1 and only 1 argument")
+		fmt.Fprintln(os.Stderr, "Malformed argument. Please supply 1 and only 1 argument")
+		os.Exit(1)
 	}
 
 	docker := getDockerClient(ctx)
@@ -55,7 +56,8 @@ func volumeInspect(ctx *cli.Context) {
 	v := volumes.Find(ctx.Args()[0])
 	vJson, err := json.MarshalIndent(v, "", "	")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	fmt.Println(string(vJson))
@@ -63,7 +65,8 @@ func volumeInspect(ctx *cli.Context) {
 
 func volumeRm(ctx *cli.Context) {
 	if len(ctx.Args()) == 0 {
-		log.Fatal("Malformed argument. Please supply 1 and only 1 argument")
+		fmt.Fprintln(os.Stderr, "Malformed argument. Please supply 1 and only 1 argument")
+		os.Exit(1)
 	}
 
 	docker := getDockerClient(ctx)
@@ -72,11 +75,11 @@ func volumeRm(ctx *cli.Context) {
 
 		v := volumes.Find(name)
 		if v == nil {
-			log.Println("Could not find volume: ", name)
+			fmt.Fprintln(os.Stderr, "Could not find volume: ", name)
 			continue
 		}
 		if !volumes.CanRemove(v) {
-			log.Println("Volume is in use, cannot remove: ", name)
+			fmt.Fprintln(os.Stderr, "Volume is in use, cannot remove: ", name)
 			continue
 		}
 
@@ -100,18 +103,19 @@ func volumeRm(ctx *cli.Context) {
 		containerId, err := docker.RunContainer(containerConfig)
 		if err != nil {
 			docker.RemoveContainer(containerId, true, true)
-			log.Println("Could not remove volume: ", v.HostPath)
+			fmt.Fprintln(os.Stderr, "Could not remove volume: ", v.HostPath)
 			continue
 		}
 		docker.RemoveContainer(containerId, true, true)
 
-		log.Println("Successfully removed volume: ", name)
+		fmt.Println("Successfully removed volume: ", name)
 	}
 }
 
 func volumeExport(ctx *cli.Context) {
 	if len(ctx.Args()) != 1 {
-		log.Fatal("Malformed argument. Please supply 1 and only 1 argument")
+		fmt.Fprintln(os.Stderr, "Malformed argument. Please supply 1 and only 1 argument")
+		os.Exit(1)
 	}
 	docker := getDockerClient(ctx)
 	volumes := setup(docker)
