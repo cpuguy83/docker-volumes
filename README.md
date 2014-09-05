@@ -107,3 +107,32 @@ GLOBAL OPTIONS:
    --help, -h				show help
    --version, -v			print the version
 ```
+
+## Examples
+```bash
+docker-volumes list
+
++--------------+-----------------------------+---------------------------------------------------------------------------------------------------+
+  f2247e6839b1 | romantic_thompson:/data     | /mnt/sda1/var/lib/docker/vfs/dir/f2247e6839b1ea7ded4123bdc2790e184e6ab6ee3b614fbcb1a72e7bad40e90c
+  452484414b40 | romantic_thompson:/moreData | /mnt/sda1/var/lib/docker/vfs/dir/452484414b407c7823357b2cac6812d4e0aa47ca13bd91c68fbe8626760e1adb
+  d40880431eb5 | focused_brattain:/data      | /mnt/sda1/var/lib/docker/vfs/dir/d40880431eb5f49a36bba5f5dd5500ae5fc85f9d8d8e4253a7b434302750dead
+  f92b748ca057 | insane_feynman:/data        | /mnt/sda1/var/lib/docker/vfs/dir/f92b748ca05768688b41703c2b011520cba7dc2a58acdf10007a83e6c17c5084
+
+# exports volume at /data and sends into ./foo.tar
+docker-volumes export insane_feynman:/data > foo.tar
+
+# export and also pause each container using that volume, unpauses when export is finished
+docker-volumes export --pause insane_feynman:/data > foo.tar
+
+# pipe in foo.tar and import to the insane_feynman container at the same /data path
+cat foo.tar | docker-volumes import insane_feynman
+
+# pipe in foo.tar and import to the romantic_thompson container at the /moreData path
+cat foo.tar | docker-volumes import romantic_thompson /moreData
+
+# export from focussed_brattain and pipe directly into the import for insane_feynman
+docker-volumes export focused_brattain:/data | docker-volumes import insane_feynman
+
+# export focussed_brattain and pipe into jolly_torvalds at a remote docker instance
+docker-volumes export focused_brattain:/data | docker-volumes -H tcp://1.2.3.4:2375 jolly_torvalds
+```
