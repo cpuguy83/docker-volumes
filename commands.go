@@ -158,6 +158,10 @@ func volumeImport(ctx *cli.Context) {
 
 	importToName := ctx.Args()[0]
 	container, err := docker.FetchContainer(importToName)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Could not find container to import to:", importToName)
+		os.Exit(1)
+	}
 
 	imgId, err := buildImportImage(docker, buildContext, importToName)
 	if err != nil {
