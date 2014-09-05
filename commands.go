@@ -24,7 +24,7 @@ func volumeList(ctx *cli.Context) {
 			id := vol.Id()
 			out = append(out, id)
 		}
-		fmt.Fprintln(os.Stderr, strings.Join(out, "\n"))
+		fmt.Fprintln(os.Stdout, strings.Join(out, "\n"))
 		return
 	}
 	var items [][]string
