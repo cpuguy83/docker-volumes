@@ -14,6 +14,26 @@ DOCKER_HOST or you can specify a host using the same syntax as with Docker, with
 
 Use this to see all your volumes, inspect them, export them, or clean them up.
 
+The primary goal of this project is to spec out UI/API for inclusion in Docker.
+Some of the implementation is hacky since I specifically wanted the CLI for this
+to act just like the Docker CLI, that is that it doesn't need to be running on
+the host or have access to the host's filesystem for it to work.
+
+### Caveats
+
+The export function is horribly inefficient, for a couple of reasons:
+
+1) The tools is inteded to be used remotely, so there is no direct access to the
+host FS, and as such the volumes or container filesystems.
+
+2) The `docker cp` command, and the coorpsonding API's, do not support volumes.
+For instance you cannot do `docker cp jolly_torvalds:/path/to/volume` like you
+can for things not in volumes. *well, you can, but it won't be the data in the
+volume... it will be the data at that location from the container's FS*
+
+To work around these issues the export function actually copies data from a volume
+into a container's FS, then uses the `docker cp` apis to pull it.
+
 ## Installation
 
 You can use the provided Dockerfile which will compile a binary for you or build
