@@ -172,6 +172,10 @@ func volumesFromDisk(path string, client docker.Docker) ([]string, error) {
 		return nil, err
 	}
 
+	if err := client.ContainerWait(id); err != nil {
+		return nil, err
+	}
+
 	dirs, err := client.ContainerLogs(id, false, true, true, false, -1)
 	if err != nil {
 		return nil, err
