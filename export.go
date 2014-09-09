@@ -22,7 +22,7 @@ func pauseContainers(docker docker.Docker, containers []string) {
 }
 
 var ExportDockerfile = `
-FROM busybox
+FROM busybox:latest
 ADD data /.volData
 ADD config.json /.volData/config.json
 CMD rm /.volData/config.json && cp -r /.volData/* /.dockervolume/

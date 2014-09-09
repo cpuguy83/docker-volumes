@@ -156,7 +156,7 @@ func setup(client docker.Docker) *volStore {
 func volumesFromDisk(path string, client docker.Docker) ([]string, error) {
 	bindSpec := path + ":" + "/.docker_root"
 	containerConfig := map[string]interface{}{
-		"Image": "busybox",
+		"Image": "busybox:latest",
 		"Cmd":   []string{"/bin/sh", "-c", "ls /.docker_root/"},
 		"Volumes": map[string]struct{}{
 			"/.docker_root": struct{}{},

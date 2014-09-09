@@ -89,7 +89,7 @@ func volumeRm(ctx *cli.Context) {
 		bindSpec := hostMountPath + ":" + "/.dockervolume"
 		bindSpec2 := hostConfPath + ":" + "/.dockervolume2"
 		containerConfig := map[string]interface{}{
-			"Image": "busybox",
+			"Image": "busybox:latest",
 			"Cmd":   []string{"/bin/sh", "-c", ("rm -rf /.dockervolume/" + filepath.Base(v.HostPath) + ("&& rm -rf /.dockervolume2/" + filepath.Base(v.HostPath)))},
 			"Volumes": map[string]struct{}{
 				"/.dockervolume":  struct{}{},
