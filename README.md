@@ -26,13 +26,13 @@ The export function is horribly inefficient, for a couple of reasons:
 1) The tools is inteded to be used remotely, so there is no direct access to the
 host FS, and as such the volumes or container filesystems.
 
-2) The `docker cp` command, and the coorpsonding API's, do not support volumes.
+2) The `docker cp` command, and the corresponding APIs, do not support volumes.
 For instance you cannot do `docker cp jolly_torvalds:/path/to/volume` like you
-can for things not in volumes. *well, you can, but it won't be the data in the
+can for things not in volumes. *Well, you can, but it won't be the data in the
 volume... it will be the data at that location from the container's FS*
 
 To work around these issues the export function actually copies data from a volume
-into a container's FS, then uses the `docker cp` apis to pull it.
+into a container's FS, then uses the `docker cp` APIs to pull it.
 
 ## Installation
 
