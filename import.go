@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/cpuguy83/dockerclient"
-	"github.com/docker/docker/archive"
+	"github.com/docker/docker/pkg/archive"
 )
 
 func buildImportImage(docker docker.Docker, context io.Reader, name string) (string, error) {

@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/cpuguy83/dockerclient"
-	"github.com/docker/docker/archive"
+	"github.com/docker/docker/pkg/archive"
 )
 
 func pauseContainers(docker docker.Docker, containers []string) {
