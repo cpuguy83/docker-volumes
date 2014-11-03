@@ -17,7 +17,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "docker-volumes"
 	app.Usage = "The missing volume manager for Docker"
-	app.Version = "1.0.0"
+	app.Version = "1.0.2"
 	app.Author = "Brian Goff"
 	app.Email = "cpuguy83@gmail.com"
 	app.Flags = []cli.Flag{
