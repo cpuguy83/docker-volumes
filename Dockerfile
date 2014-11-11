@@ -1,6 +1,7 @@
 FROM golang:1.3-cross
-ADD . /opt/docker-volumes
-WORKDIR /opt/docker-volumes
+ADD . /go/src/github.com/cpuguy83/docker-volumes
+WORKDIR /go/src/github.com/cpuguy83/docker-volumes
 ENV GOOS linux
 ENV GOARCH amd64
-ENTRYPOINT ["/opt/docker-volumes/make.sh"]
+RUN go get
+ENTRYPOINT ["/go/src/github.com/cpuguy83/docker-volumes/make.sh"]

@@ -42,14 +42,14 @@ yourself.
 ```bash
 docker build -t docker-volumes git@github.com:cpuguy83/docker-volumes.git
 docker run --name docker-volumes docker-volumes
-docker cp docker-volumes:/opt/docker-volumes/docker-volumes ./
+docker cp docker-volumes:/docker-volumes ./
 ```
 
 By default when compiling from the Dockerfile it will compile for linux/amd64.
 You can customize this using environment variables as such:
 
 ```bash
-docker run -d --name docker-volumes -e GOOS=darwin -e GOARCH=amd64 docker-volumes
+docker run --name docker-volumes -e GOOS=darwin -e GOARCH=amd64 docker-volumes
 ```
 
 This would make a binary for darwin/amd64 (OSX), available for `docker cp` at the

@@ -16,7 +16,7 @@ import (
 func volumeList(ctx *cli.Context) {
 	docker := getDockerClient(ctx)
 
-	volumes := setup(docker)
+	volumes := setup(docker, ctx.GlobalString("docker-root"))
 
 	if ctx.Bool("quiet") {
 		var out []string
@@ -51,7 +51,7 @@ func volumeInspect(ctx *cli.Context) {
 	}
 
 	docker := getDockerClient(ctx)
-	volumes := setup(docker)
+	volumes := setup(docker, ctx.GlobalString("docker-root"))
 
 	v := volumes.Find(ctx.Args()[0])
 	vJson, err := json.MarshalIndent(v, "", "	")
@@ -70,7 +70,7 @@ func volumeRm(ctx *cli.Context) {
 	}
 
 	docker := getDockerClient(ctx)
-	volumes := setup(docker)
+	volumes := setup(docker, ctx.GlobalString("docker-root"))
 	for _, name := range ctx.Args() {
 
 		v := volumes.Find(name)
@@ -118,7 +118,7 @@ func volumeExport(ctx *cli.Context) {
 		os.Exit(1)
 	}
 	docker := getDockerClient(ctx)
-	volumes := setup(docker)
+	volumes := setup(docker, ctx.GlobalString("docker-root"))
 
 	name := ctx.Args()[0]
 	v := volumes.Find(name)
