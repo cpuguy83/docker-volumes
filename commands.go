@@ -106,6 +106,7 @@ func volumeRm(ctx *cli.Context) {
 			fmt.Fprintln(os.Stderr, "Could not remove volume: ", v.HostPath)
 			continue
 		}
+		docker.ContainerWait(containerId)
 		docker.RemoveContainer(containerId, true, true)
 
 		fmt.Println("Successfully removed volume: ", name)
@@ -237,6 +238,7 @@ func volumeImport(ctx *cli.Context) {
 		fmt.Fprintln(os.Stderr, "Could not import data: ", err)
 		os.Exit(1)
 	}
+	docker.ContainerWait(id)
 	docker.RemoveImage(imgId, true, false)
 	docker.RemoveContainer(id, true, true)
 }

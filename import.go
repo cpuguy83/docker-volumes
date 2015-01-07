@@ -34,6 +34,7 @@ func extractVolConfigJson(imgId string, docker docker.Docker) (string, error) {
 		return "", fmt.Errorf("Could not extract volume config: ", err)
 	}
 	defer docker.RemoveContainer(cid1, true, true)
+	docker.ContainerWait(cid1)
 
 	tmpArch, err := docker.Copy(cid1, "/.volData/config.json")
 	if err != nil {
