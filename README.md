@@ -40,7 +40,7 @@ You can use the provided Dockerfile which will compile a binary for you or build
 yourself.
 
 ```bash
-docker build -t docker-volumes git@github.com:cpuguy83/docker-volumes.git
+docker build -t docker-volumes https://github.com/cpuguy83/docker-volumes.git
 docker run --name docker-volumes docker-volumes
 docker cp docker-volumes:/docker-volumes ./
 ```
@@ -59,7 +59,7 @@ Alternatively, if you already have golang installed on your system you can
 compile it yourself:
 
 ```bash
-git clone git@github.com:cpuguy83/docker-volumes.git
+git clone https://github.com/cpuguy83/docker-volumes.git
 cd docker-volumes
 go get
 go build
