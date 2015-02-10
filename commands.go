@@ -21,7 +21,7 @@ func volumeList(ctx *cli.Context) {
 	if ctx.Bool("quiet") {
 		var out []string
 		for _, vol := range volumes.s {
-			id := vol.Id()
+			id := vol.ID
 			out = append(out, id)
 		}
 		fmt.Fprintln(os.Stdout, strings.Join(out, "\n"))
