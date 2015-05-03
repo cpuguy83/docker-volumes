@@ -1,0 +1,60 @@
+{
+	"ImportPath": "github.com/cpuguy83/docker-volumes",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.7.3-4-gaaf92c9",
+			"Rev": "aaf92c95712104318fc35409745f1533aa5ff327"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "1.2.0-98-g30b361b",
+			"Rev": "30b361bf66a60174a9589458afbf494478bafd00"
+		},
+		{
+			"ImportPath": "github.com/cpuguy83/dockerclient",
+			"Comment": "v0.01",
+			"Rev": "f8f66dd5f272e78ae0c69da7180d1461b281b0a5"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/archive",
+			"Comment": "v1.4.1-3149-g15313df",
+			"Rev": "15313dfdf38ecaa0dc93005f1c3824491fbb3b96"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/fileutils",
+			"Comment": "v1.4.1-3149-g15313df",
+			"Rev": "15313dfdf38ecaa0dc93005f1c3824491fbb3b96"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/ioutils",
+			"Comment": "v1.4.1-3149-g15313df",
+			"Rev": "15313dfdf38ecaa0dc93005f1c3824491fbb3b96"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/pools",
+			"Comment": "v1.4.1-3149-g15313df",
+			"Rev": "15313dfdf38ecaa0dc93005f1c3824491fbb3b96"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/promise",
+			"Comment": "v1.4.1-3149-g15313df",
+			"Rev": "15313dfdf38ecaa0dc93005f1c3824491fbb3b96"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/system",
+			"Comment": "v1.4.1-3149-g15313df",
+			"Rev": "15313dfdf38ecaa0dc93005f1c3824491fbb3b96"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/units",
+			"Comment": "v1.4.1-3149-g15313df",
+			"Rev": "15313dfdf38ecaa0dc93005f1c3824491fbb3b96"
+		},
+		{
+			"ImportPath": "github.com/olekukonko/tablewriter",
+			"Rev": "1805332a9a6612da6603ccfdd99a036afb89cec6"
+		}
+	]
+}

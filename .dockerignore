@@ -1,0 +1,4 @@
+.dockerignore
+Dockerfile*
+.*.sw*
+.DS_STORE

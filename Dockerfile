@@ -1,7 +1,8 @@
-FROM golang:1.3-cross
-ADD . /go/src/github.com/cpuguy83/docker-volumes
-WORKDIR /go/src/github.com/cpuguy83/docker-volumes
-ENV GOOS linux
-ENV GOARCH amd64
-RUN go get
-ENTRYPOINT ["/go/src/github.com/cpuguy83/docker-volumes/make.sh"]
+FROM debian:jessie
+ENV DOCKERVOLUMES_VERSION 1.1.1
+RUN apt-get update && apt-get install -y curl ca-certificates --no-install-recommends \
+  && curl -SLf https://github.com/cpuguy83/docker-volumes/releases/download/v${DOCKERVOLUMES_VERSION}/docker-volumes-linux-amd64 > /usr/bin/docker-volumes \
+  && chmod +x /usr/bin/docker-volumes \
+  && apt-get remove --purge curl ca-certificates -y \
+  && rm -rf /var/lib/apt/lists
+ENTRYPOINT ["/usr/bin/docker-volumes"]
