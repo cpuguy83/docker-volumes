@@ -36,11 +36,22 @@ into a container's FS, then uses the `docker cp` APIs to pull it.
 
 ## Installation
 
-You can use the provided Dockerfile which will compile a binary for you or build
-yourself.
+You can download a pre-built binary from the releases section.
+Or you can use the docker image as such:
+
+```
+docker run -v /var/run/docker.sock:/var/run/dockr.sock cpuguy83/docker-volumes list
+```
+
+## Building
+
+You can use the provided `Dockerfile.build` which will compile a binary for you
+or build yourself.
 
 ```bash
-docker build -t docker-volumes https://github.com/cpuguy83/docker-volumes.git
+git clone https://github.com/cpuguy83/docker-volumes.git
+cd docker-volumes
+docker build -t docker-volumes -f Dockerfile.build .
 docker run --name docker-volumes docker-volumes
 docker cp docker-volumes:/docker-volumes ./
 ```
