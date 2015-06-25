@@ -40,7 +40,7 @@ You can download a pre-built binary from the releases section.
 Or you can use the docker image as such:
 
 ```
-docker run -v /var/run/docker.sock:/var/run/dockr.sock cpuguy83/docker-volumes list
+docker run -v /var/run/docker.sock:/var/run/docker.sock cpuguy83/docker-volumes list
 ```
 
 ## Building
