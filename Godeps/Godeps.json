@@ -15,7 +15,7 @@
 		{
 			"ImportPath": "github.com/cpuguy83/dockerclient",
 			"Comment": "v0.01",
-			"Rev": "f8f66dd5f272e78ae0c69da7180d1461b281b0a5"
+			"Rev": "999de0956d2f847b99ba1ff3a0553ac9265374eb"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/archive",
@@ -56,5 +56,9 @@
 			"ImportPath": "github.com/olekukonko/tablewriter",
 			"Rev": "1805332a9a6612da6603ccfdd99a036afb89cec6"
 		}
+    {
+      "ImportPath": "github.com/docker/docker/pkg/version",
+      "Rev": "9c5635a2a08029d440aca6179fb5cd1ffcda6f0e"
+    }
 	]
 }

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/codegangsta/cli"
@@ -56,7 +56,7 @@ func volumeInspect(ctx *cli.Context) {
 	v := volumes.Find(ctx.Args()[0])
 	vJson, err := json.MarshalIndent(v, "", "	")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, "error marshalling volume data: %v", err)
 		os.Exit(1)
 	}
 
@@ -83,21 +83,35 @@ func volumeRm(ctx *cli.Context) {
 			continue
 		}
 
-		hostMountPath := strings.TrimSuffix(v.HostPath, filepath.Base(v.HostPath))
-		hostConfPath := strings.TrimSuffix(hostMountPath, "/vfs/dir/") + "/volumes"
+		var containerConfig map[string]interface{}
 
-		bindSpec := hostMountPath + ":" + "/.dockervolume"
-		bindSpec2 := hostConfPath + ":" + "/.dockervolume2"
-		containerConfig := map[string]interface{}{
-			"Image": "busybox:latest",
-			"Cmd":   []string{"/bin/sh", "-c", ("rm -rf /.dockervolume/" + filepath.Base(v.HostPath) + ("&& rm -rf /.dockervolume2/" + filepath.Base(v.HostPath)))},
-			"Volumes": map[string]struct{}{
-				"/.dockervolume":  struct{}{},
-				"/.dockervolume2": struct{}{},
-			},
-			"HostConfig": map[string]interface{}{
-				"Binds": []string{bindSpec, bindSpec2},
-			},
+		if dockerApiVersion.LessThan("1.19") {
+
+			hostMountPath := strings.TrimSuffix(v.HostPath, path.Base(v.HostPath))
+			hostConfPath := strings.TrimSuffix(hostMountPath, "/vfs/dir/") + "/volumes"
+
+			bindSpec := hostMountPath + ":" + "/.dockervolume"
+			bindSpec2 := hostConfPath + ":" + "/.dockervolume2"
+			containerConfig = map[string]interface{}{
+				"Image":      "busybox:latest",
+				"Entrypoint": []string{"/bin/sh", "-c"},
+				"Cmd":        []string{"rm -rf /.dockervolume/" + path.Base(v.HostPath) + ("&& rm -rf /.dockervolume2/" + path.Base(v.HostPath))},
+				"HostConfig": map[string]interface{}{
+					"Binds": []string{bindSpec, bindSpec2},
+				},
+			}
+		} else {
+			hostMountPath := strings.TrimSuffix(v.HostPath, path.Base(v.HostPath))
+			hostMountPath = strings.TrimSuffix(v.HostPath, path.Base(v.HostPath))
+			bindSpec := hostMountPath + ":" + "/.dockervolume"
+			containerConfig = map[string]interface{}{
+				"Image":      "busybox:latest",
+				"Entrypoint": []string{"/bin/sh", "-c"},
+				"Cmd":        []string{"rm -rf /.dockervolume/" + path.Base(v.HostPath)},
+				"HostConfig": map[string]interface{}{
+					"Binds": []string{bindSpec},
+				},
+			}
 		}
 
 		containerId, err := docker.RunContainer(containerConfig)
@@ -106,8 +120,18 @@ func volumeRm(ctx *cli.Context) {
 			fmt.Fprintln(os.Stderr, "Could not remove volume: ", v.HostPath)
 			continue
 		}
+		defer docker.RemoveContainer(containerId, true, true)
 		docker.ContainerWait(containerId)
-		docker.RemoveContainer(containerId, true, true)
+		c, err := docker.FetchContainer(containerId)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error getting removeal state")
+			os.Exit(1)
+		}
+
+		if c.State.ExitCode != 0 {
+			fmt.Fprintln(os.Stderr, "Could not remove volume ", v.HostPath)
+			fmt.Println(os.Stderr, c.State.Error)
+		}
 
 		fmt.Println("Successfully removed volume: ", name)
 	}
@@ -224,9 +248,6 @@ func volumeImport(ctx *cli.Context) {
 	bindSpec := fmt.Sprintf("%s:/.dockervolume", copyToVolDir)
 	containerConfig := map[string]interface{}{
 		"Image": imgId,
-		"Volumes": map[string]struct{}{
-			"/.dockervolume": struct{}{},
-		},
 		"HostConfig": map[string]interface{}{
 			"Binds": []string{bindSpec},
 		},

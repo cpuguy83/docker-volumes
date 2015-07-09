@@ -47,9 +47,6 @@ func copyForExport(docker docker.Docker, v *Volume) (io.Reader, error) {
 	containerConfig := map[string]interface{}{
 		"Image": "busybox",
 		"Cmd":   []string{"/bin/sh", "-c", cmd},
-		"Volumes": map[string]struct{}{
-			"/.dockervolume": struct{}{},
-		},
 		"HostConfig": map[string]interface{}{
 			"Binds": []string{bindSpec},
 		},

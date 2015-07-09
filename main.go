@@ -8,13 +8,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 
 	"strings"
 
 	"github.com/codegangsta/cli"
 	"github.com/cpuguy83/dockerclient"
+	"github.com/docker/docker/pkg/version"
 )
+
+var dockerApiVersion version.Version
 
 func main() {
 	app := cli.NewApp()
@@ -68,9 +72,10 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:   "list",
-			Usage:  "List all volumes",
-			Action: volumeList,
+			Name:    "list",
+			Aliases: []string{"ls"},
+			Usage:   "List all volumes",
+			Action:  volumeList,
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "quiet, q",
@@ -147,32 +152,47 @@ func getDockerClient(ctx *cli.Context) docker.Docker {
 }
 
 func setup(client docker.Docker, rootPath string) *volStore {
+	ver, err := client.Version()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting docker daemon version")
+		os.Exit(1)
+	}
+	dockerApiVersion = version.Version(ver.ApiVersion)
+
 	var volumes = &volStore{
 		s: make(map[string]*Volume),
 	}
 	containers, err := client.FetchAllContainers(true)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, "error fetching containers: %v", err)
 		os.Exit(1)
 	}
 
 	for _, c := range containers {
 		c, err = client.FetchContainer(c.Id)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, "error getting container: %v", err)
 		}
 		vols, err := c.GetVolumes()
 		if err != nil {
 			fmt.Println("Error pulling volumes for:", c.Id)
 		}
 
-		for path, vol := range vols {
+		for p, vol := range vols {
 			v := &Volume{Volume: *vol}
 
 			name := strings.TrimPrefix(c.Name, "/")
-			name = name + ":" + path
+			name = name + ":" + p
 
-			if vol, exists := volumes.s[v.Id()]; exists {
+			v.ID = v.Id()
+			if v.ID == "_data" {
+				v.ID = path.Base(path.Dir(v.HostPath))
+			}
+
+			if strings.HasSuffix(v.HostPath, "_data") && dockerApiVersion.GreaterThan("1.18") && !v.IsBindMount {
+				v.HostPath = path.Dir(v.HostPath)
+			}
+			if vol, exists := volumes.s[v.ID]; exists {
 				v = vol
 			}
 
@@ -183,29 +203,21 @@ func setup(client docker.Docker, rootPath string) *volStore {
 		}
 	}
 
-	info, err := client.Info()
-	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-		os.Exit(1)
+	volsPath := path.Join(rootPath, "vfs", "dir")
+	if dockerApiVersion.GreaterThanOrEqualTo("1.19") {
+		volsPath = path.Join(rootPath, "volumes")
 	}
 
-	path := info.RootPath()
-	path = strings.TrimSuffix(path, "/"+filepath.Base(path))
-	if path == "" {
-		path = rootPath
-	}
-	path = filepath.Join(path, "/vfs/dir")
-
-	volDirs, err := volumesFromDisk(path, client)
+	volDirs, err := volumesFromDisk(volsPath, client)
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Fprint(os.Stderr, "error getting volume list: %v", err)
 		os.Exit(1)
 	}
 
 	for _, d := range volDirs {
-		hostPath := path + "/" + d
+		hostPath := path.Join(volsPath, d)
 
-		if hostPath == path+"/" {
+		if hostPath == volsPath || hostPath == volsPath+"/" {
 			continue
 		}
 
