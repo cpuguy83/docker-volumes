@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/sha1"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -187,6 +188,12 @@ func setup(client docker.Docker, rootPath string) *volStore {
 			v.ID = v.Id()
 			if v.ID == "_data" {
 				v.ID = path.Base(path.Dir(v.HostPath))
+			}
+
+			if v.IsBindMount {
+				h := sha1.New()
+				h.Write([]byte(v.HostPath))
+				v.ID = fmt.Sprintf("%x", h.Sum(nil))
 			}
 
 			if strings.HasSuffix(v.HostPath, "_data") && dockerApiVersion.GreaterThan("1.18") && !v.IsBindMount {
