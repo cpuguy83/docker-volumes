@@ -1,4 +1,4 @@
 #!/bin/bash
 godep get
-CGO_ENABLED=0 go build -a -ldflags -d
+go build -a -tags netgo -installsuffix netgo .
 mv docker-volumes /docker-volumes
