@@ -1,5 +1,16 @@
 # Docker Volume Manager
 
+## WARNING
+Docker 1.7 introduced some changes that broke functionality in this project.
+Docker 1.8 introcuded yet more changes that broke functionality here.
+This has always been intended as a way to prototype this functionality for Docker itself.
+Being that native `docker volumes` support is planned for Docker 1.9 and the maintainence
+burden this project brings, I am no longer going to maintain this.
+I will happily accept pull requests to fix issues, but will not provide any new fixes.
+Sorry for the inconveniece, and thank you for helping out with this project!
+
+-------
+
 This is a tool for managing your Docker volumes.
 
 Basically, since volumes are not yet first-class citizens in Docker they can be
